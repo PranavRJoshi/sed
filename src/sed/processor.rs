@@ -209,6 +209,12 @@ fn shell_command(cmd: &str) -> std::process::Command {
     c
 }
 
+// Fallback if the target OS is neither Windows nor UNIX-like
+#[cfg(not(any(unix, windows)))]
+fn shell_command(_cmd: &str) -> std::process::Command {
+    unimplemented!("the 'e' substitute flag requires a platform shell (/bin/sh or cmd.exe)")
+}
+
 /// Perform the specified RE replacement in the provided pattern space.
 fn substitute(
     pattern: &mut IOChunk,
@@ -334,7 +340,7 @@ fn substitute(
             let mut shell_out = String::from_utf8_lossy(&output_bytes.stdout).into_owned();
             if shell_out.ends_with("\r\n") {
                 // On windows, both return carriage and newline characters are used
-                shell_out.truncate(shell_out.len() - 2)
+                shell_out.truncate(shell_out.len() - 2);
             } else if shell_out.ends_with('\n') {
                 // Strip the trailing newline, as GNU sed does
                 shell_out.pop();
