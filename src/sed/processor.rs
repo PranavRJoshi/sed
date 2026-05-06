@@ -212,7 +212,7 @@ fn shell_command(cmd: &str) -> std::process::Command {
 // Fallback if the target OS is neither Windows nor UNIX-like
 #[cfg(not(any(unix, windows)))]
 fn shell_command(_cmd: &str) -> std::process::Command {
-    unimplemented!("the 'e' substitute flag requires a platform shell (/bin/sh or cmd.exe)")
+    unimplemented!("the 'e' substitute flag requires a platform shell (/bin/sh or cmd.exe)");
 }
 
 /// Perform the specified RE replacement in the provided pattern space.
