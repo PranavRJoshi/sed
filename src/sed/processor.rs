@@ -306,6 +306,29 @@ fn substitute(
 
         pattern.set_to_string(result, pattern.is_newline_terminated());
 
+        // Execute the pattern space as a shell command if the 'e' flag is set
+        if sub.execute {
+            let cmd_str = pattern.as_str()?.to_string();
+            let output_bytes = std::process::Command::new("/bin/sh")
+                .arg("-c")
+                .arg(&cmd_str)
+                .output()
+                .map_err(|e| {
+                    input_runtime_error::<()>(
+                        &command.location,
+                        context,
+                        format!("failed to execute shell command: {e}"),
+                    )
+                    .unwrap_err()
+                })?;
+            let mut shell_out = String::from_utf8_lossy(&output_bytes.stdout).into_owned();
+            // Strip the trailing newline, as GNU sed does
+            if shell_out.ends_with('\n') {
+                shell_out.pop();
+            }
+            pattern.set_to_string(shell_out, pattern.is_newline_terminated());
+        }
+
         if sub.print_flag {
             write_chunk(output, context, pattern)?;
         }
