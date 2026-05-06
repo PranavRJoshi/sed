@@ -332,8 +332,11 @@ fn substitute(
                 .unwrap_err()
             })?;
             let mut shell_out = String::from_utf8_lossy(&output_bytes.stdout).into_owned();
-            // Strip the trailing newline, as GNU sed does
-            if shell_out.ends_with('\n') {
+            if shell_out.ends_with("\r\n") {
+                // On windows, both return carriage and newline characters are used
+                shell_out.truncate(shell_out.len() - 2)
+            } else if shell_out.ends_with('\n') {
+                // Strip the trailing newline, as GNU sed does
                 shell_out.pop();
             }
             pattern.set_to_string(shell_out, pattern.is_newline_terminated());
