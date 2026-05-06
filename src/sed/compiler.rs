@@ -2150,7 +2150,10 @@ mod tests {
         let mut subst = Substitution::default();
 
         let err = compile_subst_flags(&lines, &mut chars, &mut subst, true, false).unwrap_err();
-        assert!(err.to_string().contains("not allowed with --posix or --sandbox"));
+        assert!(
+            err.to_string()
+                .contains("not allowed with --posix or --sandbox")
+        );
     }
 
     #[test]
@@ -2159,7 +2162,10 @@ mod tests {
         let mut subst = Substitution::default();
 
         let err = compile_subst_flags(&lines, &mut chars, &mut subst, false, true).unwrap_err();
-        assert!(err.to_string().contains("not allowed with --posix or --sandbox"));
+        assert!(
+            err.to_string()
+                .contains("not allowed with --posix or --sandbox")
+        );
     }
 
     #[test]
