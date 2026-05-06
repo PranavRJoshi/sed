@@ -195,6 +195,20 @@ fn re_or_saved_re<'a>(
     }
 }
 
+#[cfg(unix)]
+fn shell_command(cmd: &str) -> std::process::Command {
+    let mut c = std::process::Command::new("/bin/sh");
+    c.arg("-c").arg(cmd);
+    c
+}
+
+#[cfg(windows)]
+fn shell_command(cmd: &str) -> std::process::Command {
+    let mut c = std::process::Command::new("cmd.exe");
+    c.arg("/C").arg(cmd);
+    c
+}
+
 /// Perform the specified RE replacement in the provided pattern space.
 fn substitute(
     pattern: &mut IOChunk,
@@ -309,18 +323,14 @@ fn substitute(
         // Execute the pattern space as a shell command if the 'e' flag is set
         if sub.execute {
             let cmd_str = pattern.as_str()?.to_string();
-            let output_bytes = std::process::Command::new("/bin/sh")
-                .arg("-c")
-                .arg(&cmd_str)
-                .output()
-                .map_err(|e| {
-                    input_runtime_error::<()>(
-                        &command.location,
-                        context,
-                        format!("failed to execute shell command: {e}"),
-                    )
-                    .unwrap_err()
-                })?;
+            let output_bytes = shell_command(&cmd_str).output().map_err(|e| {
+                input_runtime_error::<()>(
+                    &command.location,
+                    context,
+                    format!("failed to execute shell command: {e}"),
+                )
+                .unwrap_err()
+            })?;
             let mut shell_out = String::from_utf8_lossy(&output_bytes.stdout).into_owned();
             // Strip the trailing newline, as GNU sed does
             if shell_out.ends_with('\n') {
